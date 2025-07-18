@@ -32,13 +32,15 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1rem;
         }
         
         /* Shining Logo */
         .logo {
             position: relative;
             display: inline-block;
+            text-align: center;
+            width: 100%;
         }
         
         .logo h1 {
@@ -51,6 +53,8 @@
             letter-spacing: -0.5px;
             position: relative;
             padding: 0 10px;
+            word-break: keep-all;
+            white-space: nowrap;
         }
         
         .logo h1::after {
@@ -81,7 +85,7 @@
         
         nav {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             padding: 1.5rem 0;
         }
@@ -121,6 +125,7 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
+            padding: 0 1rem;
         }
         
         .hero h2 {
@@ -205,6 +210,7 @@
         .section-title {
             text-align: center;
             margin-bottom: 4rem;
+            padding: 0 1rem;
         }
         
         .section-title h2 {
@@ -418,9 +424,23 @@
         }
 
         /* Form Feedback Styles */
+        #formFeedback { 
+            margin-top: 1rem; 
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
         #formFeedback i { margin-right: 8px; }
-        #formFeedback .success { color: #047857; }
-        #formFeedback .error { color: #dc2626; }
+        #formFeedback.success { 
+            background-color: #d1fae5; 
+            color: #047857; 
+            border: 1px solid #a7f3d0;
+        }
+        #formFeedback.error { 
+            background-color: #fee2e2; 
+            color: #dc2626; 
+            border: 1px solid #fca5a5;
+        }
         
         /* Footer */
         footer {
@@ -444,12 +464,37 @@
         
         /* Responsive */
         @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo p {
+                font-size: 0.8rem;
+                letter-spacing: 1px;
+            }
+            
             .about-content {
                 flex-direction: column;
             }
             
+            .about-text {
+                padding: 2rem;
+            }
+            
+            .hero {
+                padding: 4rem 0 3rem;
+            }
+            
             .hero h2 {
                 font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
             }
             
             .domain-item {
@@ -459,6 +504,54 @@
             
             .section-title h2 {
                 font-size: 2.3rem;
+            }
+            
+            .section-title p {
+                font-size: 1rem;
+            }
+            
+            section {
+                padding: 4rem 0;
+            }
+            
+            .contact-form {
+                padding: 2rem;
+            }
+            
+            .service-content {
+                padding: 2rem 1.5rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .stat-box {
+                padding: 1.5rem;
+            }
+            
+            .stat-box h3 {
+                font-size: 2.4rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .cta-button {
+                padding: 12px 30px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -614,7 +707,7 @@
                         </div>
                         <div>
                             <h3>Email</h3>
-                            <p>admin@Khandomains.com</p>
+                            <p>admin@khandomains.com</p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -628,9 +721,7 @@
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="contactForm" action="https://formspree.io/f/xpwlzbjd" method="POST">
-                        <input type="text" name="_gotcha" style="display:none">
-                        
+                    <form id="contactForm">
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" required placeholder="John Smith">
@@ -641,7 +732,7 @@
                         </div>
                         <div class="form-group">
                             <label for="subject">Subject</label>
-                            <input type="text" id="subject" name="_subject" required placeholder="Domain Inquiry">
+                            <input type="text" id="subject" name="subject" required placeholder="Domain Inquiry">
                         </div>
                         <div class="form-group">
                             <label for="message">Message</label>
@@ -649,7 +740,7 @@
                         </div>
                         <button type="submit">Send Message</button>
                     </form>
-                    <p id="formFeedback" style="margin-top:1rem;"></p>
+                    <div id="formFeedback" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -674,31 +765,75 @@
             e.preventDefault();
             
             const btn = this.querySelector('button[type="submit"]');
+            const feedback = document.getElementById('formFeedback');
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Show loading state
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             
             try {
-                const formData = new FormData(this);
-                const response = await fetch(this.action, {
+                // Use EmailJS or similar service for better reliability
+                // For now, create a mailto link as fallback
+                const emailBody = `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\n\nMessage:\n${formData.message}`;
+                const mailtoLink = `mailto:admin@khandomains.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
+                
+                // Try to send via a simple PHP script if available, otherwise use mailto
+                const response = await fetch('/send-email.php', {
                     method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                }).catch(() => {
+                    // If PHP script fails, open mailto
+                    window.location.href = mailtoLink;
+                    throw new Error('Opening email client');
                 });
                 
-                if (response.ok) {
-                    document.getElementById('formFeedback').innerHTML = 
-                        '<i class="fas fa-check-circle"></i><span class="success">Message sent successfully!</span>';
+                if (response && response.ok) {
+                    feedback.innerHTML = '<i class="fas fa-check-circle"></i> Message sent successfully! We\'ll get back to you soon.';
+                    feedback.className = 'success';
+                    feedback.style.display = 'block';
                     this.reset();
                 } else {
-                    throw new Error('Failed to send');
+                    throw new Error('Server error');
                 }
+                
             } catch (error) {
-                document.getElementById('formFeedback').innerHTML = 
-                    '<i class="fas fa-exclamation-circle"></i><span class="error">Error sending message. Please email us directly at admin@khandomains.com</span>';
+                if (error.message === 'Opening email client') {
+                    feedback.innerHTML = '<i class="fas fa-envelope"></i> Email client opened. Please send the message from your email application.';
+                    feedback.className = 'success';
+                } else {
+                    feedback.innerHTML = '<i class="fas fa-exclamation-circle"></i> Unable to send message automatically. Please email us directly at <a href="mailto:admin@khandomains.com" style="color: #dc2626; text-decoration: underline;">admin@khandomains.com</a>';
+                    feedback.className = 'error';
+                }
+                feedback.style.display = 'block';
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Send Message';
             }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     </script>
 </body>
