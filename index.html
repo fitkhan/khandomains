@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KHAN DOMAINS | Premium Domain Brokerage</title>
@@ -762,79 +763,66 @@
 
     <script>
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const btn = this.querySelector('button[type="submit"]');
-            const feedback = document.getElementById('formFeedback');
-            
-            // Get form data
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value
-            };
-            
-            // Show loading state
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            
-            try {
-                // Use EmailJS or similar service for better reliability
-                // For now, create a mailto link as fallback
-                const emailBody = `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\n\nMessage:\n${formData.message}`;
-                const mailtoLink = `mailto:admin@khandomains.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
-                
-                // Try to send via a simple PHP script if available, otherwise use mailto
-                const response = await fetch('/send-email.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                }).catch(() => {
-                    // If PHP script fails, open mailto
-                    window.location.href = mailtoLink;
-                    throw new Error('Opening email client');
-                });
-                
-                if (response && response.ok) {
-                    feedback.innerHTML = '<i class="fas fa-check-circle"></i> Message sent successfully! We\'ll get back to you soon.';
-                    feedback.className = 'success';
-                    feedback.style.display = 'block';
-                    this.reset();
-                } else {
-                    throw new Error('Server error');
-                }
-                
-            } catch (error) {
-                if (error.message === 'Opening email client') {
-                    feedback.innerHTML = '<i class="fas fa-envelope"></i> Email client opened. Please send the message from your email application.';
-                    feedback.className = 'success';
-                } else {
-                    feedback.innerHTML = '<i class="fas fa-exclamation-circle"></i> Unable to send message automatically. Please email us directly at <a href="mailto:admin@khandomains.com" style="color: #dc2626; text-decoration: underline;">admin@khandomains.com</a>';
-                    feedback.className = 'error';
-                }
-                feedback.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Send Message';
-            }
-        });
+    e.preventDefault();
+    
+    const btn = this.querySelector('button[type="submit"]');
+    const feedback = document.getElementById('formFeedback');
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    try {
+        // Initialize EmailJS (replace with your actual keys)
+        emailjs.init('X_ZFB-PtUwTc1eqmV'); // Get this from EmailJS dashboard
         
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        const templateParams = {
+            from_name: document.getElementById('name').value,
+            from_email: document.getElementById('email').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value,
+            to_email: 'admin@khandomains.com'
+        };
+        
+        const response = await emailjs.send(
+            'service_xthex95', // Get this from EmailJS dashboard
+            'template_bwo9mwu', // Get this from EmailJS dashboard
+            templateParams
+        );
+        
+        if (response.status === 200) {
+            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Message sent successfully! We\'ll get back to you soon.';
+            feedback.className = 'success';
+            feedback.style.display = 'block';
+            this.reset();
+        } else {
+            throw new Error('Failed to send');
+        }
+        
+    } catch (error) {
+        console.error('EmailJS Error:', error);
+        
+        // Fallback to mailto
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value
+        };
+        
+        const emailBody = `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\n\nMessage:\n${formData.message}`;
+        const mailtoLink = `mailto:admin@khandomains.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
+        
+        window.location.href = mailtoLink;
+        
+        feedback.innerHTML = '<i class="fas fa-envelope"></i> Email client opened. Please send the message from your email application.';
+        feedback.className = 'success';
+        feedback.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+    }
+});
     </script>
 </body>
 </html>
